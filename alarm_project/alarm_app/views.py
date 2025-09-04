@@ -36,7 +36,7 @@ def delete_alarm(request, pk):
     return redirect('alarm_list')
 
 
- @login_required
+@login_required
 def toggle_alarm(request, pk):
     alarm = get_object_or_404(Alarm, pk=pk, user=request.user)
     if request.method == 'POST':
