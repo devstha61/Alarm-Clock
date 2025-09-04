@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Alarm Clock{% endblock %}</title>
+  {% load static %}
+  <link rel="icon" href="data:," />
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 2rem; }
+    .container { max-width: 760px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    nav a { margin-right: .75rem; }
+    ul { padding-left: 1.1rem; }
+    .muted { opacity: .7; }
+    .row { display:flex; gap:1rem; align-items:center; }
+    .btn { padding:.5rem .8rem; border:1px solid #ddd; background:#f7f7f7; cursor:pointer; border-radius:.5rem; }
+    .btn.danger { background:#ffe9e9; border-color:#ffcdcd; }
+    .btn.primary { background:#eef6ff; border-color:#cfe6ff; }
+    .tag { font-size:.8rem; padding:.1rem .4rem; border-radius:.4rem; background:#eee; }
+    .on { background:#d9f7d9; }
+    .off { background:#f7d9d9; }
+    input, select { padding:.4rem .5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div><strong>⏰ Alarm Clock</strong></div>
+      <nav>
+        {% if user.is_authenticated %}
+          <span class="muted">Hi, {{ user.username }}!</span>
+          <a href="/accounts/logout/">Logout</a>
+        {% else %}
+          <a href="/accounts/login/">Login</a>
+          <a href="/accounts/signup/">Sign up</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>
