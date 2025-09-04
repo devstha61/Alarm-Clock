@@ -81,7 +81,7 @@ DATABASES = {
 }
 
 LOGIN_REDIRECT_URL = "alarm_list"  
-LOGOUT_REDIRECT_URL = "login"      
+LOGOUT_REDIRECT_URL ='/accounts/login/'      
 LOGIN_URL = "login"               
 
 # Password validation

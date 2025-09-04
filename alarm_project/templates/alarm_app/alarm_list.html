@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Alarms{% endblock %}
+{% block content %}
+<h1>My Alarms</h1>
+
+<section>
+  <form method="post" class="row">
+    {% csrf_token %}
+    {{ form.time }}
+    {{ form.label }}
+    <label>Active? {{ form.is_active }}</label>
+    <button class="btn primary" type="submit">Add alarm</button>
+  </form>
+</section>
+
+<h2 style="margin-top:1rem">Saved</h2>
+<ul id="alarmList">
+  {% for a in alarms %}
+    <li>
+      <strong>{{ a.time|time:"H:i" }}</strong>
+      {% if a.label %}<span class="muted">— {{ a.label }}</span>{% endif %}
+      <span class="tag {% if a.is_active %}on{% else %}off{% endif %}">
+        {{ a.is_active|yesno:"ON,OFF" }}
+      </span>
+
+      <form action="{% url 'toggle_alarm' a.pk %}" method="post" style="display:inline">
+        {% csrf_token %}
+        <button class="btn" type="submit">Toggle</button>
+      </form>
+      <form action="{% url 'delete_alarm' a.pk %}" method="post" style="display:inline">
+        {% csrf_token %}
+        <button class="btn danger" type="submit">Delete</button>
+      </form>
+    </li>
+  {% empty %}
+    <li>No alarms yet.</li>
+  {% endfor %}
+</ul>
+
+<!-- Alarm Sound -->
+<audio id="alarmSound" src="{% static 'alarm_app/alarm.mp3' %}" preload="auto"></audio>
+<p class="muted">The alarm rings only if this page is open and sound is allowed.</p>
+
+<script>
+const ALARMS = [
+  {% for a in alarms %}
+    {
+      id: {{ a.id }},
+      time: "{{ a.time|time:'H:i' }}",
+      label: "{{ a.label|default_if_none:''|escapejs }}",
+      active: {% if a.is_active %}true{% else %}false{% endif %}
+    }{% if not forloop.last %},{% endif %}
+  {% empty %}
+  {% endfor %}
+];
+
+const rungKeys = new Set();
+
+function minuteKey(date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2,'0');
+  const dd = String(date.getDate()).padStart(2,'0');
+  const hh = String(date.getHours()).padStart(2,'0');
+  const mi = String(date.getMinutes()).padStart(2,'0');
+  return `${yyyy}${mm}${dd}-${hh}${mi}`;
+}
+
+function checkAlarms() {
+  const now = new Date();
+  const current = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const keyMinute = minuteKey(now);
+
+  ALARMS.forEach(a => {
+    if (!a.active) return;
+    if (a.time === current) {
+      const key = `${a.id}-${keyMinute}`;
+      if (!rungKeys.has(key)) {
+        rungKeys.add(key);
+        ring(a);
+      }
+    }
+  });
+}
+
+function ring(a) {
+  try {
+    // Play alarm sound
+    const audio = document.getElementById('alarmSound');
+    audio.currentTime = 0;
+    audio.play();
+
+    // Non-blocking DOM notification
+    const notification = document.createElement('div');
+    notification.textContent = `⏰ Alarm: ${a.label || ''}`;
+    notification.style.background = '#fffae6';
+    notification.style.padding = '0.5rem 1rem';
+    notification.style.border = '1px solid #ccc';
+    notification.style.borderRadius = '0.5rem';
+    notification.style.marginTop = '1rem';
+    notification.style.position = 'fixed';
+    notification.style.top = '10px';
+    notification.style.right = '10px';
+    notification.style.zIndex = 9999;
+    document.body.appendChild(notification);
+
+    // Remove notification after 5 seconds
+    setTimeout(() => notification.remove(), 5000);
+
+  } catch(err) {
+    console.error(err);
+  }
+}
+
+setInterval(checkAlarms, 1000);
+</script>
+{% endblock %}

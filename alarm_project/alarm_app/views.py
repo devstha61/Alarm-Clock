@@ -28,6 +28,7 @@ def alarm_list(request):
     })
 
 
+
 @login_required
 def delete_alarm(request, pk):
     alarm = get_object_or_404(Alarm, pk=pk, user=request.user)
@@ -46,14 +47,14 @@ def toggle_alarm(request, pk):
 
 
 
-
-def signup(request):
-    if request.method == 'POST':
+def signup_view(request):
+    if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            return redirect('alarm_list')
+            login(request, user)  
+            return redirect('alarm_list')  
     else:
-         form = UserCreationForm()
+        form = UserCreationForm()
     return render(request, 'registration/signup.html', {'form': form})
+
